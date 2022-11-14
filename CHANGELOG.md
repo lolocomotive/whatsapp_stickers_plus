@@ -1,3 +1,7 @@
+## 1.1.1
+
+* Overwrite `toString()` for exceptions
+
 ## 1.1.0
 
 * Added 2 extra exceptions `WhatsappStickersAlreadyAddedException` and `WhatsappStickersCancelledException`
