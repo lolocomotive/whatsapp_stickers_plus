@@ -173,7 +173,7 @@ public class StickerContentProvider extends ContentProvider {
     }
 
     private List<StickerPack> getStickerPackList() {
-            readContentFile(Objects.requireNonNull(getContext()));
+        readContentFile(Objects.requireNonNull(getContext()));
         return stickerPackList;
     }
 
