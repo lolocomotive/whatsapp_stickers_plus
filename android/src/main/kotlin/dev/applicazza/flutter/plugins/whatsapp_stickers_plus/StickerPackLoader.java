@@ -158,12 +158,12 @@ class StickerPackLoader {
     }
 
     static private AssetFileDescriptor fetchFile(AssetManager am, @NonNull final String fileName) {
-        return (fileName.contains("_MZN_AD_")) ? fetchAssetFile(am, fileName) : fetchNonAssetFile(fileName);
+        return (fileName.contains("mzn_ad_")) ? fetchAssetFile(am, fileName) : fetchNonAssetFile(fileName);
     }
 
     static private AssetFileDescriptor fetchNonAssetFile(final String fileName) {
         try {
-            String fname = fileName.replace("_MZN_FD_", File.separator);
+            String fname = fileName.replace("mzn_fd_", File.separator);
             final File file = new File(fname);
             return new AssetFileDescriptor(ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY), 0,
                     AssetFileDescriptor.UNKNOWN_LENGTH);
@@ -177,7 +177,7 @@ class StickerPackLoader {
     static private AssetFileDescriptor fetchAssetFile(@NonNull final AssetManager am,
             @NonNull final String fileName) {
         try {
-            String fname = fileName.replace("_MZN_AD_", File.separator);
+            String fname = fileName.replace("mzn_ad_", File.separator);
             String f = "flutter_assets/" + fname;
             return am.openFd(f);
         } catch (final IOException e) {
@@ -193,8 +193,8 @@ class StickerPackLoader {
         InputStream inputStream = fetchFile(context.getAssets(), name).createInputStream();
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         if (inputStream == null) {
-            String stickerFileName = name.replace("_MZN_AD_", File.separator);
-            stickerFileName = stickerFileName.replace("_MZN_FD_", File.separator);
+            String stickerFileName = name.replace("mzn_ad_", File.separator);
+            stickerFileName = stickerFileName.replace("mzn_fd_", File.separator);
             throw new IOException("cannot read sticker asset:" + stickerFileName);
         }
         int read;

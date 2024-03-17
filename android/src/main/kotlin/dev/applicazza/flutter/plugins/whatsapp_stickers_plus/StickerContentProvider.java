@@ -279,13 +279,13 @@ public class StickerContentProvider extends ContentProvider {
 
     private AssetFileDescriptor fetchFile(@NonNull final Uri uri, @NonNull final AssetManager am,
             @NonNull final String fileName, @NonNull final String identifier) {
-        return (fileName.contains("_MZN_AD_")) ? fetchAssetFile(uri, am, fileName, identifier)
+        return (fileName.contains("mzn_ad_")) ? fetchAssetFile(uri, am, fileName, identifier)
                 : fetchNonAssetFile(uri, fileName, identifier);
     }
 
     private AssetFileDescriptor fetchNonAssetFile(final Uri uri, final String fileName, final String identifier) {
         try {
-            String fname = fileName.replace("_MZN_FD_", File.separator);
+            String fname = fileName.replace("mzn_fd_", File.separator);
             final File file = new File(fname);
             return new AssetFileDescriptor(ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY), 0,
                     AssetFileDescriptor.UNKNOWN_LENGTH);
@@ -299,7 +299,7 @@ public class StickerContentProvider extends ContentProvider {
     private AssetFileDescriptor fetchAssetFile(@NonNull final Uri uri, @NonNull final AssetManager am,
             @NonNull final String fileName, @NonNull final String identifier) {
         try {
-            String fname = fileName.replace("_MZN_AD_", File.separator);
+            String fname = fileName.replace("mzn_ad_", File.separator);
             String f = "flutter_assets/" + fname;
             return am.openFd(f);
         } catch (final IOException e) {

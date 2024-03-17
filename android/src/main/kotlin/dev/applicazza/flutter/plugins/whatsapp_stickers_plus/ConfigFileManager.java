@@ -86,10 +86,10 @@ public class ConfigFileManager {
     static String getFileName(String name) {
         if (name.contains("assets://")) {
             name = name.replace("assets://", "");
-            name = name.replace("/", "_MZN_AD_");
+            name = name.replace("/", "mzn_ad_");
         } else if (name.contains("file://")) {
             name = name.replace("file://", "");
-            name = name.replace("/", "_MZN_FD_");
+            name = name.replace("/", "mzn_fd_");
         }
         return name;
     }

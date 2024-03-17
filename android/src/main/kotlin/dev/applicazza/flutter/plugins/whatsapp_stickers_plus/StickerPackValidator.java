@@ -138,8 +138,8 @@ class StickerPackValidator {
                                 + ", tray image file: " + stickerPack.trayImageFile);
             }
         } catch (IOException e) {
-            String trayFileName = stickerPack.trayImageFile.replace("_MZN_AD_", File.separator);
-            trayFileName = trayFileName.replace("_MZN_FD_", File.separator);
+            String trayFileName = stickerPack.trayImageFile.replace("mzn_ad_", File.separator);
+            trayFileName = trayFileName.replace("mzn_fd_", File.separator);
             throw new InvalidPackException(InvalidPackException.FILE_NOT_FOUND,
                     "Cannot open tray image, " + trayFileName);
         }
@@ -207,8 +207,8 @@ class StickerPackValidator {
              * }
              */
         } catch (IOException e) {
-            String stickerFileName = fileName.replace("_MZN_AD_", File.separator);
-            stickerFileName = stickerFileName.replace("_MZN_FD_", File.separator);
+            String stickerFileName = fileName.replace("mzn_ad_", File.separator);
+            stickerFileName = stickerFileName.replace("mzn_fd_", File.separator);
 
             throw new InvalidPackException(InvalidPackException.FILE_NOT_FOUND,
                     "cannot open sticker file: sticker pack identifier:" + identifier + ", filename:" + stickerFileName
