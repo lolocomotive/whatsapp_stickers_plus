@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+
 import 'exceptions.dart';
 
 class WhatsappStickers {
@@ -68,7 +69,7 @@ class WhatsappStickers {
         case WhatsappStickersCancelledException.code:
           throw WhatsappStickersCancelledException(e.message);
         default:
-          throw WhatsappStickersException(e.message);
+          rethrow;
       }
     }
   }
