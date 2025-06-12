@@ -1,6 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="dev.applicazza.flutter.plugins.whatsapp_stickers_plus">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <application
         tools:ignore="GoogleAppIndexingWarning"

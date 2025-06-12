@@ -57,7 +57,7 @@ class WhitelistCheck {
     }
 
     private static boolean isWhitelistedFromProvider(@NonNull Context context, @NonNull String identifier,
-            String whatsappPackageName) {
+                                                     String whatsappPackageName) {
         final PackageManager packageManager = context.getPackageManager();
 
         if (isPackageInstalled(whatsappPackageName, packageManager)) {

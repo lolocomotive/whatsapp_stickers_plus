@@ -11,6 +11,7 @@ class WhatsappStickers {
   final String name;
   final String publisher;
   final WhatsappStickerImage trayImageFileName;
+  final bool animatedStickerPack;
   String? publisherWebsite;
   String? privacyPolicyWebsite;
   String? licenseAgreementWebsite;
@@ -25,6 +26,7 @@ class WhatsappStickers {
     this.privacyPolicyWebsite,
     this.licenseAgreementWebsite,
     this.imageDataVersion = "1",
+    this.animatedStickerPack = false,
   });
 
   void addSticker(WhatsappStickerImage image, List<String> emojis) {
@@ -43,6 +45,7 @@ class WhatsappStickers {
       payload['licenseAgreementWebsite'] = licenseAgreementWebsite;
       payload['imageDataVersion'] = imageDataVersion;
       payload['stickers'] = _stickers;
+      payload['animatedStickerPack'] = animatedStickerPack;
       await _channel.invokeMethod('sendToWhatsApp', payload);
     } on PlatformException catch (e) {
       switch (e.code.toUpperCase()) {
