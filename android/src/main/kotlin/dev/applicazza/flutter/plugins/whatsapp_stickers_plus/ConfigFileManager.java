@@ -1,19 +1,11 @@
 package dev.applicazza.flutter.plugins.whatsapp_stickers_plus;
 
-import android.content.ContentResolver;
 import android.content.Context;
-import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
-import android.net.Uri;
-import android.util.Log;
-
-import androidx.annotation.NonNull;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
@@ -22,12 +14,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.util.PathUtils;
-
-import static dev.applicazza.flutter.plugins.whatsapp_stickers_plus.StickerPackLoader.getStickerAssetUri;
 
 public class ConfigFileManager {
 
@@ -57,14 +46,14 @@ public class ConfigFileManager {
         String privacyPolicyWebsite = call.argument("privacyPolicyWebsite");
         String licenseAgreementWebsite = call.argument("licenseAgreementWebsite");
         String imageDataVersion = call.argument("imageDataVersion");
-        Map<String, List<String>> stickers = call.argument("stickers");
+        List<Map<String, Object>> stickers = call.argument("stickers");
         boolean animatedStickerPack = call.argument("animatedStickerPack");
         StickerPack newStickerPack = new StickerPack(identifier, name, publisher, trayImageFileName, "",
                 publisherWebsite, privacyPolicyWebsite, licenseAgreementWebsite, imageDataVersion, false, animatedStickerPack);
         List<Sticker> newStickers = new ArrayList<Sticker>();
         assert stickers != null;
-        for (Map.Entry<String, List<String>> entry : stickers.entrySet()) {
-            Sticker s = new Sticker(getFileName(entry.getKey()), entry.getValue());
+        for (Map<String, Object> entry : stickers) {
+            Sticker s = new Sticker(getFileName((String) entry.get("path")), (List<String>) entry.get("emojis"));
 
             newStickers.add(s);
         }

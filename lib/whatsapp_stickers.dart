@@ -5,7 +5,7 @@ import 'exceptions.dart';
 class WhatsappStickers {
   static const MethodChannel _channel = MethodChannel('whatsapp_stickers_plus');
 
-  final Map<String, List<String>> _stickers = {};
+  final List<Map<String, dynamic>> _stickers = [];
 
   final String identifier;
   final String name;
@@ -30,7 +30,7 @@ class WhatsappStickers {
   });
 
   void addSticker(WhatsappStickerImage image, List<String> emojis) {
-    _stickers[image.path] = emojis;
+    _stickers.add({"path": image.path, "emojis": emojis});
   }
 
   Future<void> sendToWhatsApp() async {
