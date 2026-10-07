@@ -12,6 +12,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -72,6 +73,39 @@ public class ConfigFileManager {
         }
         stickerPacks.add(stickerPack);
         return updateConfigFile(context, stickerPacks);
+    }
+
+    /**
+     * Removes every pack whose identifier isn't in identifiers.
+     * Returns whether the config file changed.
+     */
+    static boolean retainPacks(Context context, Collection<String> identifiers)
+            throws JSONException, InvalidPackException {
+        List<StickerPack> all = getStickerPacks(context);
+        List<StickerPack> kept = new ArrayList<StickerPack>();
+        for (StickerPack s : all) {
+            if (identifiers.contains(s.identifier)) {
+                kept.add(s);
+            }
+        }
+        if (kept.size() == all.size()) return false;
+        return updateConfigFile(context, kept);
+    }
+
+    /**
+     * Removes the pack with the given identifier.
+     * Returns whether the config file changed.
+     */
+    static boolean removePack(Context context, String identifier) throws JSONException, InvalidPackException {
+        List<StickerPack> all = getStickerPacks(context);
+        List<StickerPack> kept = new ArrayList<StickerPack>();
+        for (StickerPack s : all) {
+            if (!s.identifier.equals(identifier)) {
+                kept.add(s);
+            }
+        }
+        if (kept.size() == all.size()) return false;
+        return updateConfigFile(context, kept);
     }
 
     static String getFileName(String name) {

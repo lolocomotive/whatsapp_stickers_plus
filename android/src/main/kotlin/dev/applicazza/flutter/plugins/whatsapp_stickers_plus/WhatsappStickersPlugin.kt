@@ -71,7 +71,6 @@ public class WhatsappStickersPlugin : FlutterPlugin, MethodCallHandler, Activity
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
-        this.result = result
         when (call.method) {
             "getPlatformVersion" ->
                 result.success("Android " + android.os.Build.VERSION.RELEASE)
@@ -90,7 +89,35 @@ public class WhatsappStickersPlugin : FlutterPlugin, MethodCallHandler, Activity
                 }
             }
 
+            "removeStickerPack" -> {
+                val identifier = call.argument<String>("identifier")
+                if (identifier == null) {
+                    result.error("invalid_argument", "identifier is required", null)
+                    return
+                }
+                try {
+                    result.success(ConfigFileManager.removePack(context, identifier))
+                } catch (e: Exception) {
+                    result.error("error", e.message, null)
+                }
+            }
+
+            "retainStickerPacks" -> {
+                val identifiers = call.argument<List<String>>("identifiers")
+                if (identifiers == null) {
+                    result.error("invalid_argument", "identifiers is required", null)
+                    return
+                }
+                try {
+                    result.success(ConfigFileManager.retainPacks(context, identifiers.toSet()))
+                } catch (e: Exception) {
+                    result.error("error", e.message, null)
+                }
+            }
+
             "sendToWhatsApp" -> {
+                // Kept for onActivityResult, which answers once WhatsApp returns.
+                this.result = result
                 try {
                     val stickerPack: StickerPack = ConfigFileManager.fromMethodCall(context, call)
                     // update json file

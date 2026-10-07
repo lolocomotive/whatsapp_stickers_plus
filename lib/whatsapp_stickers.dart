@@ -29,6 +29,18 @@ class WhatsappStickers {
     this.animatedStickerPack = false,
   });
 
+  /// Removes the pack with [identifier] from the packs exposed to WhatsApp.
+  /// Returns whether it was there.
+  static Future<bool> removeStickerPack(String identifier) async {
+    return await _channel.invokeMethod<bool>('removeStickerPack', {'identifier': identifier}) ?? false;
+  }
+
+  /// Removes every pack whose identifier isn't in [identifiers] from the packs
+  /// exposed to WhatsApp. Returns whether any pack was removed.
+  static Future<bool> retainStickerPacks(Iterable<String> identifiers) async {
+    return await _channel.invokeMethod<bool>('retainStickerPacks', {'identifiers': identifiers.toList()}) ?? false;
+  }
+
   void addSticker(WhatsappStickerImage image, List<String> emojis) {
     _stickers.add({"path": image.path, "emojis": emojis});
   }
