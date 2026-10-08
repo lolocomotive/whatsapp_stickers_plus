@@ -28,7 +28,9 @@ public class WhatsappStickersPlugin : FlutterPlugin, MethodCallHandler, Activity
     private var context: Context? = null
     private var stickerPackList: List<StickerPack>? = null
     private var activity: Activity? = null
-    private var result: Result? = null
+    private var activityBinding: ActivityPluginBinding? = null
+    // Result of the pending sendToWhatsApp call, answered once in onActivityResult.
+    private var pendingResult: Result? = null
     val ADD_PACK = 200
 
     private val EXTRA_STICKER_PACK_ID = "sticker_pack_id"
@@ -116,8 +118,9 @@ public class WhatsappStickersPlugin : FlutterPlugin, MethodCallHandler, Activity
             }
 
             "sendToWhatsApp" -> {
-                // Kept for onActivityResult, which answers once WhatsApp returns.
-                this.result = result
+                // A previous request whose result never came back can't be answered anymore.
+                pendingResult?.error("cancelled", "cancelled", null)
+                pendingResult = null
                 try {
                     val stickerPack: StickerPack = ConfigFileManager.fromMethodCall(context, call)
                     // update json file
@@ -148,14 +151,21 @@ public class WhatsappStickersPlugin : FlutterPlugin, MethodCallHandler, Activity
                         stickerPackName
                     )
 
+                    val activity = this.activity ?: throw InvalidPackException(
+                        InvalidPackException.FAILED,
+                        "No activity attached"
+                    )
                     try {
-                        this.activity?.startActivityForResult(
+                        // Kept for onActivityResult, which answers once WhatsApp returns.
+                        pendingResult = result
+                        activity.startActivityForResult(
                             Intent.createChooser(
                                 intent,
                                 "ADD Sticker"
                             ), ADD_PACK
                         )
                     } catch (e: ActivityNotFoundException) {
+                        pendingResult = null
                         throw InvalidPackException(
                             InvalidPackException.FAILED,
                             "Sticker pack not added. If you'd like to add it, make sure you update to the latest version of WhatsApp."
@@ -190,51 +200,49 @@ public class WhatsappStickersPlugin : FlutterPlugin, MethodCallHandler, Activity
     }
 
     override fun onDetachedFromActivity() {
+        activityBinding?.removeActivityResultListener(this)
+        activityBinding = null
+        activity = null
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+        onAttachedToActivity(binding)
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-        this.activity = binding.activity
+        activityBinding = binding
+        activity = binding.activity
         binding.addActivityResultListener(this)
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
+        onDetachedFromActivity()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
-        if (requestCode == ADD_PACK) {
-            // Create the intent
-            if (resultCode == Activity.RESULT_CANCELED) {
-                if (data != null) {
-                    val validationError = data.getStringExtra("validation_error")
-                    if (validationError != null) {
-                        this.result?.error("error", validationError, "")
-                    } else {
-                        this.result?.error("cancelled", "cancelled", "")
-                    }
-                } else {
-                    this.result?.error("cancelled", "cancelled", "")
-                }
-            } else if (resultCode == Activity.RESULT_OK) {
-                if (data != null) {
-                    val bundle = data.extras!!
-                    if (bundle.containsKey("add_successful")) {
-                        this.result?.success("add_successful")
-                    } else if (bundle.containsKey("already_added")) {
-                        this.result?.error("already_added", "already_added", "")
-                    } else {
-                        this.result?.success("success")
-                    }
-                } else {
-                    this.result?.success("success")
-                }
+        if (requestCode != ADD_PACK) return false
+        // Each request must be answered exactly once, a second reply crashes the app.
+        val result = pendingResult ?: return true
+        pendingResult = null
+        if (resultCode == Activity.RESULT_CANCELED) {
+            val validationError = data?.getStringExtra("validation_error")
+            if (validationError != null) {
+                result.error("error", validationError, "")
             } else {
-                this.result?.success("unknown")
+                result.error("cancelled", "cancelled", "")
             }
+        } else if (resultCode == Activity.RESULT_OK) {
+            val bundle = data?.extras
+            if (bundle?.containsKey("add_successful") == true) {
+                result.success("add_successful")
+            } else if (bundle?.containsKey("already_added") == true) {
+                result.error("already_added", "already_added", "")
+            } else {
+                result.success("success")
+            }
+        } else {
+            result.success("unknown")
         }
-
         return true
     }
 }
