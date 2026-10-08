@@ -216,7 +216,7 @@ public class StickerContentProvider extends ContentProvider {
             builder.add(stickerPack.identifier);
             builder.add(stickerPack.name);
             builder.add(stickerPack.publisher);
-            builder.add(stickerPack.trayImageFile);
+            builder.add(trayAlias(stickerPack));
             builder.add(stickerPack.androidPlayStoreLink);
             builder.add(stickerPack.iosAppStoreLink);
             builder.add(stickerPack.publisherEmail);
@@ -238,8 +238,10 @@ public class StickerContentProvider extends ContentProvider {
                 new String[] { STICKER_FILE_NAME_IN_QUERY, STICKER_FILE_EMOJI_IN_QUERY });
         for (StickerPack stickerPack : getStickerPackList()) {
             if (identifier.equals(stickerPack.identifier)) {
-                for (Sticker sticker : stickerPack.getStickers()) {
-                    cursor.addRow(new Object[] { sticker.imageFileName, TextUtils.join(",", sticker.emojis) });
+                final List<Sticker> stickers = stickerPack.getStickers();
+                for (int i = 0; i < stickers.size(); i++) {
+                    final Sticker sticker = stickers.get(i);
+                    cursor.addRow(new Object[] { stickerAlias(sticker, i), TextUtils.join(",", sticker.emojis) });
                 }
             }
         }
@@ -262,20 +264,45 @@ public class StickerContentProvider extends ContentProvider {
             throw new IllegalArgumentException("file name is empty, uri: " + uri);
         }
         // making sure the file that is trying to be fetched is in the list of stickers.
+        // Both the short aliases and the full names are accepted, packs added before
+        // the aliases were introduced may still be cached by WhatsApp under the full names.
         for (StickerPack stickerPack : getStickerPackList()) {
             if (identifier.equals(stickerPack.identifier)) {
-                if (fileName.equals(stickerPack.trayImageFile)) {
-                    return fetchFile(uri, am, fileName, identifier);
+                if (fileName.equals(trayAlias(stickerPack)) || fileName.equals(stickerPack.trayImageFile)) {
+                    return fetchFile(uri, am, stickerPack.trayImageFile, identifier);
                 } else {
-                    for (Sticker sticker : stickerPack.getStickers()) {
-                        if (fileName.equals(sticker.imageFileName)) {
-                            return fetchFile(uri, am, fileName, identifier);
+                    final List<Sticker> stickers = stickerPack.getStickers();
+                    for (int i = 0; i < stickers.size(); i++) {
+                        final Sticker sticker = stickers.get(i);
+                        if (fileName.equals(stickerAlias(sticker, i)) || fileName.equals(sticker.imageFileName)) {
+                            return fetchFile(uri, am, sticker.imageFileName, identifier);
                         }
                     }
                 }
             }
         }
         return null;
+    }
+
+    /**
+     * The file names given to WhatsApp. The stored names encode the whole path
+     * (see ConfigFileManager.getFileName), and WhatsApp rejects packs whose tray
+     * icon has such a long name with "handleStickerPackPreviewResult/failed".
+     */
+    private static String trayAlias(@NonNull StickerPack stickerPack) {
+        return "tray" + extensionOf(stickerPack.trayImageFile);
+    }
+
+    private static String stickerAlias(@NonNull Sticker sticker, int index) {
+        return index + extensionOf(sticker.imageFileName);
+    }
+
+    /** The extension of fileName including the dot, or an empty string. */
+    private static String extensionOf(@NonNull String fileName) {
+        // Only the last path segment, directories may contain dots too.
+        final int start = Math.max(fileName.lastIndexOf("mzn_fd_"), fileName.lastIndexOf("mzn_ad_"));
+        final int dot = fileName.lastIndexOf('.');
+        return dot < 0 || dot < start ? "" : fileName.substring(dot);
     }
 
     private AssetFileDescriptor fetchFile(@NonNull final Uri uri, @NonNull final AssetManager am,
